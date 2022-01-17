@@ -1,4 +1,4 @@
-### RISCV RV32/64 very simple disassembler
+### RISCV RV32/64 very simple disassembler written in Rust
 
 ```shell
 > cargo run .\elf-samples\c\0001-empty\a.out.32
