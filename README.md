@@ -4,7 +4,7 @@
 > cargo run .\elf-samples\c\0001-empty\a.out.32
 ```
 
-```asm
+```text
 register_fini:
     00010074:    li     a5, 0
     00010078:    beq    a5, zero, 16
