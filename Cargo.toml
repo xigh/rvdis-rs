@@ -1,0 +1,8 @@
+[package]
+name = "rvdis-rs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+riscv = { version="0.1.0", git="https://github.com/xigh/libriscv-rs" }
+elf_rs = "0.2.0"
