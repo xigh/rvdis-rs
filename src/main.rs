@@ -11,6 +11,8 @@ use elf::RVElf;
 mod dis;
 use dis::dump_inst;
 
+use riscv::Inst;
+
 fn read_elf(elf_buf: &[u8]) {
     let elf = match RVElf::decode_from(elf_buf.as_ref()) {
         Some(elf) => elf,
@@ -30,6 +32,10 @@ fn read_elf(elf_buf: &[u8]) {
 
     loop {
         let inst = riscv::decode(&mut text_bytes, elf.is_64bits());
+        match inst {
+            Inst::ERROR => break,
+            _ => (),
+        }
 
         match elf.symbol_at(text_addr) {
             Some(label) => println!("{}:", label),
@@ -52,6 +58,10 @@ fn read_bin(buf: &[u8], org: u64, is_64bits: bool) {
 
     loop {
         let inst = riscv::decode(&mut text_bytes, is_64bits);
+        match inst {
+            Inst::ERROR => break,
+            _ => (),
+        }
         
         dump_inst(text_addr, inst);
 

@@ -3,10 +3,9 @@ use riscv::{Inst, Gpr};
 pub fn dump_inst(text_addr: u64, inst: Inst) {
     match inst {
         Inst::ERROR => return,
-        Inst::TODO => return,
         Inst::UNDEF(w) => {
             println!(
-                "    {:08x}:    undef {:08x} op=0b{:05b}11 f3=0b{:03b} f7=0x{:02x}",
+                "    {:08x}:    undef  w={:08x} op=0b{:05b}11 f3=0b{:03b} f7=0x{:02x}",
                 text_addr,
                 w,
                 (w >> 2) & 0b11111,
@@ -391,8 +390,28 @@ pub fn dump_inst(text_addr: u64, inst: Inst) {
                 imm
             )
         }
+        // CSR
+        Inst::CSRRW(rd, rs1, csr) => println!("    {:08x}:    csrrw  {}, {}, {}",
+            text_addr, rd, rs1, csr),
+        Inst::CSRRS(rd, rs1, csr) => println!("    {:08x}:    csrrs  {}, {}, {}",
+            text_addr, rd, rs1, csr),
+        Inst::CSRRC(rd, rs1, csr) => println!("    {:08x}:    csrrc  {}, {}, {}",
+            text_addr, rd, rs1, csr),
+        Inst::CSRRWI(rd, uimm, csr) => println!("    {:08x}:    csrrwi {}, {}, {}",
+            text_addr, rd, uimm, csr),
+        Inst::CSRRSI(rd, uimm, csr) => println!("    {:08x}:    csrrsi {}, {}, {}",
+            text_addr, rd, uimm, csr),
+        Inst::CSRRCI(rd, uimm, csr) => println!("    {:08x}:    csrrci {}, {}, {}",
+            text_addr, rd, uimm, csr),
+        // SYS
+        Inst::FENCEI(rd, rs1, imm) => println!("    {:08x}:    fencei {}, {}, {}",
+            text_addr, rd, rs1, imm),
         Inst::ECALL => println!("    {:08x}:    ecall", text_addr),
         Inst::EBREAK => println!("    {:08x}:    ebreak", text_addr),
+        // Priviledged instructions
+        Inst::SRET => println!("    {:08x}:    sret", text_addr),
+        Inst::MRET => println!("    {:08x}:    mret", text_addr),
+        Inst::WFI => println!("    {:08x}:    wfi", text_addr),
         // RV64I extensions
         Inst::ADDIW(rd, rs1, imm) => {
             println!(
@@ -596,6 +615,9 @@ pub fn dump_inst(text_addr: u64, inst: Inst) {
                 rs2
             );
         }
-        _ => unimplemented!()
+        // _ => {
+        //     println!("    {:08x}:    {:?}", text_addr, inst);
+        //     unimplemented!()
+        // }
     }
 }
