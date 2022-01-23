@@ -22,6 +22,8 @@ fn read_elf(elf_buf: &[u8]) {
         }
     };
 
+    let bits = if elf.is_64bits() { 64 } else { 32 };
+
     let (text_addr, text_data) = match elf.get_section(".text") {
         Some((addr, data)) => (addr, data),
         None => return,
@@ -31,7 +33,7 @@ fn read_elf(elf_buf: &[u8]) {
     let mut text_addr = text_addr;
 
     loop {
-        let inst = riscv::decode(&mut text_bytes, elf.is_64bits());
+        let (inst, len) = riscv::decode(&mut text_bytes, bits);
         match inst {
             Inst::ERROR => break,
             _ => (),
@@ -48,16 +50,16 @@ fn read_elf(elf_buf: &[u8]) {
 
         dump_inst(text_addr, inst);
 
-        text_addr += 4; // todo: get size from decode
+        text_addr += len as u64;
     }
 }
 
-fn read_bin(buf: &[u8], org: u64, is_64bits: bool) {
+fn read_bin(buf: &[u8], org: u64, bits: u8) {
     let mut text_addr = org;
     let mut text_bytes = riscv::ByteSlice::from(buf);
 
     loop {
-        let inst = riscv::decode(&mut text_bytes, is_64bits);
+        let (inst, len) = riscv::decode(&mut text_bytes, bits);
         match inst {
             Inst::ERROR => break,
             _ => (),
@@ -65,14 +67,14 @@ fn read_bin(buf: &[u8], org: u64, is_64bits: bool) {
         
         dump_inst(text_addr, inst);
 
-        text_addr += 4; // todo: get size from decode
+        text_addr += len as u64;
     }
 }
 
 fn main() {
     let mut org = 0u64;
     let mut bin = false;
-    let mut is32 = false;
+    let mut bits = 32u8;
     let mut prev = String::new();
 
     let mut files: Vec<String> = vec!();
@@ -95,8 +97,9 @@ fn main() {
         
         match arg.as_str() {
             "-b" | "--binary" => bin = true,
-            "-32" => { bin = true; is32 = true },
-            "-64" => { bin = true; is32 = false },
+            "-32" => { bin = true; bits = 32 },
+            "-64" => { bin = true; bits = 64 },
+            "-128" => { bin = true; bits = 128 },
             "--org" => prev = arg, 
             _ => files.push(arg),
         }
@@ -120,7 +123,7 @@ fn main() {
         }
     
         if bin {
-            read_bin(&elf_buf, org, !is32);
+            read_bin(&elf_buf, org, bits);
         } else {
             read_elf(&elf_buf);
         }
